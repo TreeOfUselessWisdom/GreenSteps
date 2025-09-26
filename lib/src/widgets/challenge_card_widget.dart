@@ -37,10 +37,10 @@ class ChallengeCardWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Challenge Image
-          Expanded(
-            flex: 2,
-            child: ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+          ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+            child: AspectRatio(
+              aspectRatio: 1.5,
               child: CachedNetworkImage(
                 imageUrl: challenge.imageUrl,
                 width: double.infinity,
@@ -64,12 +64,12 @@ class ChallengeCardWidget extends StatelessWidget {
           ),
           
           // Challenge Info
-          Expanded(
-            flex: 3,
+          Flexible(
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   // Title
                   Text(
@@ -83,15 +83,13 @@ class ChallengeCardWidget extends StatelessWidget {
                   const SizedBox(height: 8),
                   
                   // Description
-                  Expanded(
-                    child: Text(
-                      challenge.description,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.grey[600],
-                      ),
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
+                  Text(
+                    challenge.description,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Colors.grey[600],
                     ),
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 12),
                   

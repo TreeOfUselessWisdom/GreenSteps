@@ -32,10 +32,10 @@ class ProductCardWidget extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Product Image
-            Expanded(
-              flex: 3,
-              child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+            ClipRRect(
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              child: AspectRatio(
+                aspectRatio: 1.2,
                 child: CachedNetworkImage(
                   imageUrl: product.imageUrl,
                   width: double.infinity,
@@ -55,12 +55,12 @@ class ProductCardWidget extends StatelessWidget {
             ),
             
             // Product Info
-            Expanded(
-              flex: 2,
+            Flexible(
               child: Padding(
                 padding: const EdgeInsets.all(12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     // Title
                     Text(

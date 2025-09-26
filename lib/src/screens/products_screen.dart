@@ -135,7 +135,6 @@ class _ProductsScreenState extends State<ProductsScreen> {
   Widget _buildProductGrid() {
     return Consumer<DatabaseService>(
       builder: (context, databaseService, child) {
-        final allProducts = databaseService.products;
         final filteredProducts = databaseService.searchProducts(
           _searchQuery,
           category: _selectedCategory,
@@ -234,52 +233,76 @@ class _ProductsScreenState extends State<ProductsScreen> {
     
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
         return Container(
-          padding: const EdgeInsets.all(20),
+          color: Theme.of(context).scaffoldBackgroundColor,
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.7,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Filter by Category',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
+              // Handle bar
+              Container(
+                margin: const EdgeInsets.only(top: 12),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[400],
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              const SizedBox(height: 20),
-              
-              ListTile(
-                title: const Text('All Categories'),
-                leading: _selectedCategory == null 
-                    ? const Icon(Icons.check, color: Color(0xFF4CAF50))
-                    : const SizedBox(width: 24),
-                onTap: () {
-                  setState(() {
-                    _selectedCategory = null;
-                  });
-                  Navigator.pop(context);
-                },
+              // Content
+              Flexible(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Filter by Category',
+                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      
+                      ListTile(
+                        title: const Text('All Categories'),
+                        leading: _selectedCategory == null 
+                            ? const Icon(Icons.check, color: Color(0xFF4CAF50))
+                            : const SizedBox(width: 24),
+                        onTap: () {
+                          setState(() {
+                            _selectedCategory = null;
+                          });
+                          Navigator.pop(context);
+                        },
+                      ),
+                      
+                      ...categories.map((category) {
+                        final isSelected = _selectedCategory == category;
+                        return ListTile(
+                          title: Text(_formatCategoryName(category)),
+                          leading: isSelected 
+                              ? const Icon(Icons.check, color: Color(0xFF4CAF50))
+                              : const SizedBox(width: 24),
+                          onTap: () {
+                            setState(() {
+                              _selectedCategory = category;
+                            });
+                            Navigator.pop(context);
+                          },
+                        );
+                      }),
+                    ],
+                  ),
+                ),
               ),
-              
-              ...categories.map((category) {
-                final isSelected = _selectedCategory == category;
-                return ListTile(
-                  title: Text(_formatCategoryName(category)),
-                  leading: isSelected 
-                      ? const Icon(Icons.check, color: Color(0xFF4CAF50))
-                      : const SizedBox(width: 24),
-                  onTap: () {
-                    setState(() {
-                      _selectedCategory = category;
-                    });
-                    Navigator.pop(context);
-                  },
-                );
-              }),
             ],
           ),
         );
@@ -292,52 +315,76 @@ class _ProductsScreenState extends State<ProductsScreen> {
     
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
         return Container(
-          padding: const EdgeInsets.all(20),
+          color: Theme.of(context).scaffoldBackgroundColor,
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.7,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Minimum Eco Score',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
+              // Handle bar
+              Container(
+                margin: const EdgeInsets.only(top: 12),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[400],
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              const SizedBox(height: 20),
-              
-              ListTile(
-                title: const Text('Any Score'),
-                leading: _minEcoScore == null 
-                    ? const Icon(Icons.check, color: Color(0xFF4CAF50))
-                    : const SizedBox(width: 24),
-                onTap: () {
-                  setState(() {
-                    _minEcoScore = null;
-                  });
-                  Navigator.pop(context);
-                },
+              // Content
+              Flexible(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Minimum Eco Score',
+                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      
+                      ListTile(
+                        title: const Text('Any Score'),
+                        leading: _minEcoScore == null 
+                            ? const Icon(Icons.check, color: Color(0xFF4CAF50))
+                            : const SizedBox(width: 24),
+                        onTap: () {
+                          setState(() {
+                            _minEcoScore = null;
+                          });
+                          Navigator.pop(context);
+                        },
+                      ),
+                      
+                      ...scores.map((score) {
+                        final isSelected = _minEcoScore == score;
+                        return ListTile(
+                          title: Text('$score+ (${_getEcoScoreLabel(score)})'),
+                          leading: isSelected 
+                              ? const Icon(Icons.check, color: Color(0xFF4CAF50))
+                              : const SizedBox(width: 24),
+                          onTap: () {
+                            setState(() {
+                              _minEcoScore = score;
+                            });
+                            Navigator.pop(context);
+                          },
+                        );
+                      }),
+                    ],
+                  ),
+                ),
               ),
-              
-              ...scores.map((score) {
-                final isSelected = _minEcoScore == score;
-                return ListTile(
-                  title: Text('$score+ (${_getEcoScoreLabel(score)})'),
-                  leading: isSelected 
-                      ? const Icon(Icons.check, color: Color(0xFF4CAF50))
-                      : const SizedBox(width: 24),
-                  onTap: () {
-                    setState(() {
-                      _minEcoScore = score;
-                    });
-                    Navigator.pop(context);
-                  },
-                );
-              }),
             ],
           ),
         );
@@ -354,39 +401,63 @@ class _ProductsScreenState extends State<ProductsScreen> {
     
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
         return Container(
-          padding: const EdgeInsets.all(20),
+          color: Theme.of(context).scaffoldBackgroundColor,
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.7,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Sort Products',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
+              // Handle bar
+              Container(
+                margin: const EdgeInsets.only(top: 12),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[400],
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              const SizedBox(height: 20),
-              
-              ...options.map((option) {
-                final isSelected = _sortBy == option['key'];
-                return ListTile(
-                  title: Text(option['label']!),
-                  leading: isSelected 
-                      ? const Icon(Icons.check, color: Color(0xFF4CAF50))
-                      : const SizedBox(width: 24),
-                  onTap: () {
-                    setState(() {
-                      _sortBy = option['key']!;
-                    });
-                    Navigator.pop(context);
-                  },
-                );
-              }),
+              // Content
+              Flexible(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Sort Products',
+                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      
+                      ...options.map((option) {
+                        final isSelected = _sortBy == option['key'];
+                        return ListTile(
+                          title: Text(option['label']!),
+                          leading: isSelected 
+                              ? const Icon(Icons.check, color: Color(0xFF4CAF50))
+                              : const SizedBox(width: 24),
+                          onTap: () {
+                            setState(() {
+                              _sortBy = option['key']!;
+                            });
+                            Navigator.pop(context);
+                          },
+                        );
+                      }),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ),
         );
