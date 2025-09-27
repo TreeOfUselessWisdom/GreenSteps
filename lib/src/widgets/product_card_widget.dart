@@ -55,12 +55,11 @@ class ProductCardWidget extends StatelessWidget {
             ),
             
             // Product Info
-            Flexible(
+            Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
                   children: [
                     // Title
                     Text(

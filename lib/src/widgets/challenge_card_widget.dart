@@ -64,12 +64,11 @@ class ChallengeCardWidget extends StatelessWidget {
           ),
           
           // Challenge Info
-          Flexible(
+          Expanded(
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
                 children: [
                   // Title
                   Text(
