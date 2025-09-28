@@ -34,9 +34,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     
-    // Pre-fill demo credentials
-    _loginEmailController.text = 'account4youGreenSteps@gmail.com';
-    _loginPasswordController.text = '123456';
+
   }
 
   @override
@@ -88,32 +86,20 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min, // Overflow fix
                     children: [
                       // Logo and Title
-                      Container(
-                        width: 80,
-                        height: 80,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: LinearGradient(
-                            colors: [Color(0xFF2E7D32), Color(0xFF4CAF50)],
-                          ),
-                        ),
-                        child: const Icon(
-                          Icons.eco,
-                          color: Colors.white,
-                          size: 40,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'GreenSteps',
-                        style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF2E7D32),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
+Padding(
+  padding: const EdgeInsets.symmetric(vertical: 8),
+  child: Image.asset(
+    'assets/images/GreenSteps_Transparent.png', // or use SvgPicture.asset(...)
+    width: 160,
+    fit: BoxFit.contain,
+    semanticLabel: 'GreenSteps',
+  ),
+),
+
+
                       Text(
                         'Your Sustainable Living Guide',
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
@@ -121,7 +107,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                         ),
                         textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 24),
                       
                       // Tab Controller
                       Container(
@@ -138,25 +124,39 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                           labelColor: Colors.white,
                           unselectedLabelColor: Colors.grey[600],
                           dividerColor: Colors.transparent,
+                          indicatorSize: TabBarIndicatorSize.tab,
+                          tabAlignment: TabAlignment.fill,
                           tabs: const [
-                            Tab(text: 'Login'),
-                            Tab(text: 'Register'),
+                            Tab(
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                child: Text('Login'),
+                              ),
+                            ),
+                            Tab(
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                child: Text('Register'),
+                              ),
+                            ),
                           ],
                         ),
                       ),
                       const SizedBox(height: 24),
                       
-                      // Tab Content
-                      SizedBox(
-                        height: 400,
-                        child: TabBarView(
-                          controller: _tabController,
-                          children: [
-                            _buildLoginTab(),
-                            _buildRegisterTab(),
-                          ],
-                        ),
-                      ),
+                      // Tab Content 
+SizedBox(
+  height: 400, // or MediaQuery.of(context).size.height * 0.6
+  child: TabBarView(
+    controller: _tabController,
+    children: [
+      SingleChildScrollView(child: _buildLoginTab()),
+      SingleChildScrollView(child: _buildRegisterTab()),
+    ],
+  ),
+),
+
+
                     ],
                   ),
                 ),
@@ -174,6 +174,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
         return Form(
           key: _loginFormKey,
           child: Column(
+            mainAxisSize: MainAxisSize.min, // ADD THIS LINE
             children: [
               TextFormField(
                 controller: _loginEmailController,
@@ -259,36 +260,36 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              // const SizedBox(height: 16),
               
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.blue.shade50,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.blue.shade200),
-                ),
-                child: Column(
-                  children: [
-                    Text(
-                      'Demo Credentials',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blue.shade700,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Email: account4youGreensteps@gmail.com\nPassword: 123456',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.blue.shade600,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              ),
+              // Container(
+              //   padding: const EdgeInsets.all(16),
+              //   decoration: BoxDecoration(
+              //     color: Colors.blue.shade50,
+              //     borderRadius: BorderRadius.circular(8),
+              //     border: Border.all(color: Colors.blue.shade200),
+              //   ),
+              //   child: Column(
+              //     children: [
+              //       Text(
+              //         'Demo Credentials',
+              //         style: TextStyle(
+              //           fontWeight: FontWeight.bold,
+              //           color: Colors.blue.shade700,
+              //         ),
+              //       ),
+              //       const SizedBox(height: 4),
+              //       Text(
+              //         'Email: account4youGreensteps@gmail.com\nPassword: 123456',
+              //         style: TextStyle(
+              //           fontSize: 12,
+              //           color: Colors.blue.shade600,
+              //         ),
+              //         textAlign: TextAlign.center,
+              //       ),
+              //     ],
+              //   ),
+              // ),
             ],
           ),
         );
@@ -299,125 +300,128 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
   Widget _buildRegisterTab() {
     return Consumer<AuthService>(
       builder: (context, authService, child) {
-        return Form(
-          key: _registerFormKey,
-          child: Column(
-            children: [
-              TextFormField(
-                controller: _registerNameController,
-                decoration: const InputDecoration(
-                  labelText: 'Full Name',
-                  prefixIcon: Icon(Icons.person_outlined),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your full name';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              
-              TextFormField(
-                controller: _registerEmailController,
-                keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                  prefixIcon: Icon(Icons.email_outlined),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your email';
-                  }
-                  if (!value.contains('@')) {
-                    return 'Please enter a valid email';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              
-              TextFormField(
-                controller: _registerPasswordController,
-                obscureText: _obscureRegisterPassword,
-                decoration: InputDecoration(
-                  labelText: 'Password',
-                  prefixIcon: const Icon(Icons.lock_outlined),
-                  suffixIcon: IconButton(
-                    icon: Icon(_obscureRegisterPassword ? Icons.visibility : Icons.visibility_off),
-                    onPressed: () {
-                      setState(() {
-                        _obscureRegisterPassword = !_obscureRegisterPassword;
-                      });
-                    },
+        return SingleChildScrollView( // ADD THIS WRAPPER
+          child: Form(
+            key: _registerFormKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min, // ADD THIS
+              children: [
+                TextFormField(
+                  controller: _registerNameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Full Name',
+                    prefixIcon: Icon(Icons.person_outlined),
                   ),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a password';
-                  }
-                  if (value.length < 6) {
-                    return 'Password must be at least 6 characters';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              
-              TextFormField(
-                controller: _registerConfirmPasswordController,
-                obscureText: _obscureConfirmPassword,
-                decoration: InputDecoration(
-                  labelText: 'Confirm Password',
-                  prefixIcon: const Icon(Icons.lock_outlined),
-                  suffixIcon: IconButton(
-                    icon: Icon(_obscureConfirmPassword ? Icons.visibility : Icons.visibility_off),
-                    onPressed: () {
-                      setState(() {
-                        _obscureConfirmPassword = !_obscureConfirmPassword;
-                      });
-                    },
-                  ),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please confirm your password';
-                  }
-                  if (value != _registerPasswordController.text) {
-                    return 'Passwords do not match';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 24),
-              
-              if (authService.error != null) ...[
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.red.shade50,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.red.shade200),
-                  ),
-                  child: Text(
-                    authService.error!,
-                    style: TextStyle(color: Colors.red.shade700),
-                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your full name';
+                    }
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 16),
-              ],
-              
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: ElevatedButton(
-                  onPressed: authService.isLoading ? null : _handleRegister,
-                  child: authService.isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text('Create Account'),
+                
+                TextFormField(
+                  controller: _registerEmailController,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: const InputDecoration(
+                    labelText: 'Email',
+                    prefixIcon: Icon(Icons.email_outlined),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your email';
+                    }
+                    if (!value.contains('@')) {
+                      return 'Please enter a valid email';
+                    }
+                    return null;
+                  },
                 ),
-              ),
-            ],
+                const SizedBox(height: 16),
+                
+                TextFormField(
+                  controller: _registerPasswordController,
+                  obscureText: _obscureRegisterPassword,
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                    prefixIcon: const Icon(Icons.lock_outlined),
+                    suffixIcon: IconButton(
+                      icon: Icon(_obscureRegisterPassword ? Icons.visibility : Icons.visibility_off),
+                      onPressed: () {
+                        setState(() {
+                          _obscureRegisterPassword = !_obscureRegisterPassword;
+                        });
+                      },
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter a password';
+                    }
+                    if (value.length < 6) {
+                      return 'Password must be at least 6 characters';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                
+                TextFormField(
+                  controller: _registerConfirmPasswordController,
+                  obscureText: _obscureConfirmPassword,
+                  decoration: InputDecoration(
+                    labelText: 'Confirm Password',
+                    prefixIcon: const Icon(Icons.lock_outlined),
+                    suffixIcon: IconButton(
+                      icon: Icon(_obscureConfirmPassword ? Icons.visibility : Icons.visibility_off),
+                      onPressed: () {
+                        setState(() {
+                          _obscureConfirmPassword = !_obscureConfirmPassword;
+                        });
+                      },
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please confirm your password';
+                    }
+                    if (value != _registerPasswordController.text) {
+                      return 'Passwords do not match';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 24),
+                
+                if (authService.error != null) ...[
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.red.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.red.shade200),
+                    ),
+                    child: Text(
+                      authService.error!,
+                      style: TextStyle(color: Colors.red.shade700),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+                
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: authService.isLoading ? null : _handleRegister,
+                    child: authService.isLoading
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text('Create Account'),
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },

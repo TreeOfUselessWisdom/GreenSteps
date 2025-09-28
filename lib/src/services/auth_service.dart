@@ -1,8 +1,13 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../models/user_model.dart';
 
 class AuthService extends ChangeNotifier {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  
   UserModel? _currentUser;
   bool _isLoading = false;
   String? _error;
@@ -12,32 +17,46 @@ class AuthService extends ChangeNotifier {
   String? get error => _error;
   bool get isAuthenticated => _currentUser != null;
 
-  // Mock authentication for demo purposes
+  AuthService() {
+    // Listen to auth state changes
+    _auth.authStateChanges().listen(_onAuthStateChanged);
+  }
+
+  void _onAuthStateChanged(User? firebaseUser) {
+    if (firebaseUser != null) {
+      _currentUser = UserModel(
+        uid: firebaseUser.uid,
+        displayName: firebaseUser.displayName ?? 'User',
+        email: firebaseUser.email ?? '',
+        photoUrl: firebaseUser.photoURL,
+        createdAt: firebaseUser.metadata.creationTime ?? DateTime.now(),
+        preferences: const UserPreferences(),
+      );
+    } else {
+      _currentUser = null;
+    }
+    notifyListeners();
+  }
+
+  // Email/Password Authentication
   Future<bool> signInWithEmailAndPassword(String email, String password) async {
     _setLoading(true);
     _clearError();
 
     try {
-      // Simulate API call delay
-      await Future.delayed(const Duration(seconds: 1));
-
-      // Demo user authentication
-      if (email == 'account4youGreensteps@gmail.com.com' && password == '123456') {
-        _currentUser = UserModel(
-          uid: 'user_123',
-          displayName: 'User',
-          email: email,
-          photoUrl: 'https://ui-avatars.com/api/?name=Demo+User&size=200&background=2E7D32&color=fff',
-          createdAt: DateTime.now().subtract(const Duration(days: 30)),
-          preferences: const UserPreferences(),
-        );
-        _setLoading(false);
-        return true;
-      } else {
-        throw Exception('Invalid email or password');
-      }
+      final credential = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      
+      _setLoading(false);
+      return credential.user != null;
+    } on FirebaseAuthException catch (e) {
+      _setError(_getErrorMessage(e.code));
+      _setLoading(false);
+      return false;
     } catch (e) {
-      _setError(e.toString());
+      _setError('An unexpected error occurred');
       _setLoading(false);
       return false;
     }
@@ -48,51 +67,77 @@ class AuthService extends ChangeNotifier {
     _clearError();
 
     try {
-      // Simulate API call delay
-      await Future.delayed(const Duration(seconds: 2));
+      final credential = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
 
-      // Demo user creation (in real app, would create in Firebase)
-      // Note: Not auto-logging in as per requirements
+      // Update display name
+      if (credential.user != null) {
+        await credential.user!.updateDisplayName(displayName);
+        await credential.user!.reload();
+      }
+      
       _setLoading(false);
-      return true;
+      return credential.user != null;
+    } on FirebaseAuthException catch (e) {
+      _setError(_getErrorMessage(e.code));
+      _setLoading(false);
+      return false;
     } catch (e) {
-      _setError(e.toString());
+      _setError('An unexpected error occurred');
       _setLoading(false);
       return false;
     }
   }
 
+  // Google Sign-In
   Future<bool> signInWithGoogle() async {
     _setLoading(true);
     _clearError();
 
     try {
-      // Simulate Google sign-in delay
-      await Future.delayed(const Duration(seconds: 2));
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) {
+        _setLoading(false);
+        return false; // User cancelled
+      }
 
-      // Demo Google user
-      _currentUser = UserModel(
-        uid: 'google_user_456',
-        displayName: 'Sarah Green',
-        email: 'sarah.green@gmail.com',
-        photoUrl: 'https://ui-avatars.com/api/?name=Sarah+Green&size=200&background=4CAF50&color=fff',
-        createdAt: DateTime.now().subtract(const Duration(days: 15)),
-        preferences: const UserPreferences(),
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
       );
+
+      await _auth.signInWithCredential(credential);
       _setLoading(false);
       return true;
+    } on FirebaseAuthException catch (e) {
+      _setError(_getErrorMessage(e.code));
+      _setLoading(false);
+      return false;
     } catch (e) {
-      _setError(e.toString());
+      _setError('Google sign-in failed');
       _setLoading(false);
       return false;
     }
   }
 
+  // Sign Out
   Future<void> signOut() async {
-    _currentUser = null;
-    notifyListeners();
+    try {
+      await Future.wait([
+        _auth.signOut(),
+        _googleSignIn.signOut(),
+      ]);
+      _currentUser = null;
+      notifyListeners();
+    } catch (e) {
+      _setError('Sign out failed');
+    }
   }
 
+  // Update Profile
   Future<bool> updateProfile({
     String? displayName,
     String? photoUrl,
@@ -101,6 +146,17 @@ class AuthService extends ChangeNotifier {
     if (_currentUser == null) return false;
 
     try {
+      final user = _auth.currentUser;
+      if (user != null) {
+        if (displayName != null) {
+          await user.updateDisplayName(displayName);
+        }
+        if (photoUrl != null) {
+          await user.updatePhotoURL(photoUrl);
+        }
+        await user.reload();
+      }
+
       _currentUser = _currentUser!.copyWith(
         displayName: displayName ?? _currentUser!.displayName,
         photoUrl: photoUrl ?? _currentUser!.photoUrl,
@@ -109,11 +165,26 @@ class AuthService extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
-      _setError(e.toString());
+      _setError('Profile update failed');
       return false;
     }
   }
 
+  // Password Reset
+  Future<bool> sendPasswordResetEmail(String email) async {
+    try {
+      await _auth.sendPasswordResetEmail(email: email);
+      return true;
+    } on FirebaseAuthException catch (e) {
+      _setError(_getErrorMessage(e.code));
+      return false;
+    } catch (e) {
+      _setError('Password reset failed');
+      return false;
+    }
+  }
+
+  // Helper Methods
   void _setLoading(bool loading) {
     _isLoading = loading;
     notifyListeners();
@@ -129,16 +200,29 @@ class AuthService extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Initialize with demo user for immediate app functionality
-  void initializeDemoMode() {
-    _currentUser = UserModel(
-      uid: 'user_123',
-      displayName: 'User',
-      email: 'account4youGreensteps@gmail.com',
-      photoUrl: 'https://ui-avatars.com/api/?name=Demo+User&size=200&background=2E7D32&color=fff',
-      createdAt: DateTime.now().subtract(const Duration(days: 30)),
-      preferences: const UserPreferences(),
-    );
-    notifyListeners();
+  String _getErrorMessage(String errorCode) {
+    switch (errorCode) {
+      case 'user-not-found':
+        return 'No user found with this email address';
+      case 'wrong-password':
+        return 'Incorrect password';
+      case 'email-already-in-use':
+        return 'An account already exists with this email';
+      case 'weak-password':
+        return 'Password is too weak';
+      case 'invalid-email':
+        return 'Invalid email address';
+      case 'user-disabled':
+        return 'This account has been disabled';
+      case 'too-many-requests':
+        return 'Too many attempts. Please try again later';
+      case 'operation-not-allowed':
+        return 'This sign-in method is not enabled';
+      default:
+        return 'Authentication failed. Please try again';
+    }
   }
+
+  // Remove demo mode - no longer needed
+  // void initializeDemoMode() { ... } - REMOVED
 }

@@ -71,7 +71,7 @@ class NavigationProvider extends ChangeNotifier {
 
 class AppProviders {
   static List<ChangeNotifierProvider> get providers => [
-    ChangeNotifierProvider<AuthService>(create: (_) => AuthService()..initializeDemoMode()),
+    ChangeNotifierProvider<AuthService>(create: (_) => AuthService()),
     ChangeNotifierProvider<DatabaseService>(create: (_) => DatabaseService()..initialize()),
     ChangeNotifierProvider<ThemeProvider>(create: (_) => ThemeProvider()),
     ChangeNotifierProvider<NavigationProvider>(create: (_) => NavigationProvider()),
