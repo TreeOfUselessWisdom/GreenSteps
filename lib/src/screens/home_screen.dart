@@ -476,12 +476,15 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             children: [
               Container(
                 padding: const EdgeInsets.all(24),
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Color(0xFF2E7D32), Color(0xFF4CAF50)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
+                decoration: const BoxDecoration(                  
+                    color: Theme.of(context).cardTheme.color,
+                    border: Border(
+                      bottom: BorderSide(
+                        color: Theme.of(context).dividerColor,
+                        width: 1,
+                      ),
+                    ),
+                  
                 ),
                 child: Consumer<AuthService>(
                   builder: (context, authService, child) {
@@ -493,25 +496,26 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                           backgroundImage: user?.photoUrl != null
                               ? NetworkImage(user!.photoUrl!)
                               : null,
-                          backgroundColor: Colors.white,
+                          backgroundColor: Theme.of(context).primaryColor,
                           child: user?.photoUrl == null
-                              ? const Icon(Icons.person, size: 40, color: Color(0xFF2E7D32))
+                              ? Icon(
+                                Icons.person,
+                                size: 40, 
+                                color: Theme.of(context).colorScheme.onPrimary,
+                                )
                               : null,
                         ),
                         const SizedBox(height: 16),
                         Text(
                           user?.displayName ?? 'User',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         Text(
                           user?.email ?? '',
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 14,
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
                           ),
                         ),
                       ],
