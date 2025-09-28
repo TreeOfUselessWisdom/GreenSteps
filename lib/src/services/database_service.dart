@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/carbon_entry_model.dart';
 import '../models/product_model.dart';
 import '../models/challenge_model.dart';
@@ -8,6 +9,7 @@ import '../models/forum_post_model.dart';
 import '../core/constants.dart';
 
 class DatabaseService extends ChangeNotifier {
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
   final List<CarbonEntryModel> _carbonEntries = [];
   final List<ProductModel> _products = [];
   final List<ChallengeModel> _challenges = [];
@@ -36,6 +38,8 @@ class DatabaseService extends ChangeNotifier {
   Future<void> addCarbonEntry(CarbonEntryModel entry) async {
     _carbonEntries.add(entry);
     notifyListeners();
+    // Fire-and-forget persist to Firestore
+    unawaited(_db.collection('carbonEntries').doc(entry.id).set(entry.toJson()));
   }
 
   List<CarbonEntryModel> getCarbonEntriesForUser(String userId) {
@@ -43,10 +47,11 @@ class DatabaseService extends ChangeNotifier {
   }
 
   List<CarbonEntryModel> getCarbonEntriesForDateRange(String userId, DateTime start, DateTime end) {
+    // Inclusive range: start <= entry.date <= end
     return _carbonEntries.where((entry) => 
-        entry.userId == userId && 
-        entry.date.isAfter(start.subtract(const Duration(days: 1))) &&
-        entry.date.isBefore(end.add(const Duration(days: 1)))
+        entry.userId == userId &&
+        !entry.date.isBefore(start) &&
+        !entry.date.isAfter(end)
     ).toList();
   }
 
@@ -89,6 +94,7 @@ class DatabaseService extends ChangeNotifier {
     );
     _userChallenges.add(userChallenge);
     notifyListeners();
+    unawaited(_db.collection('userChallenges').doc(userChallenge.id).set(userChallenge.toJson()));
   }
 
   Future<void> completeChallenge(String userId, String challengeId) async {
@@ -108,6 +114,7 @@ class DatabaseService extends ChangeNotifier {
       );
       _userChallenges[index] = updated;
       notifyListeners();
+      unawaited(_db.collection('userChallenges').doc(updated.id).update(updated.toJson()));
     }
   }
 
@@ -119,6 +126,7 @@ class DatabaseService extends ChangeNotifier {
   Future<void> addForumPost(ForumPostModel post) async {
     _forumPosts.add(post);
     notifyListeners();
+    unawaited(_db.collection('forumPosts').doc(post.id).set(post.toJson()));
   }
 
   Future<void> likePost(String postId) async {
@@ -126,12 +134,14 @@ class DatabaseService extends ChangeNotifier {
     if (index != -1) {
       _forumPosts[index] = _forumPosts[index].copyWith(likes: _forumPosts[index].likes + 1);
       notifyListeners();
+      unawaited(_db.collection('forumPosts').doc(postId).update({'likes': _forumPosts[index].likes}));
     }
   }
 
   Future<void> addComment(CommentModel comment) async {
     _comments.add(comment);
     notifyListeners();
+    unawaited(_db.collection('comments').doc(comment.id).set(comment.toJson()));
   }
 
   List<CommentModel> getCommentsForPost(String postId) {
@@ -297,7 +307,7 @@ class DatabaseService extends ChangeNotifier {
       // Add transport entry
       _carbonEntries.add(CarbonEntryModel(
         id: 'entry_transport_$i',
-        userId: 'demo_user_123',
+        userId: 'user_123',
         date: date,
         category: 'transport',
         subType: ['car_km', 'bus_km', 'train_km', 'bike_km'][random.nextInt(4)],
@@ -309,7 +319,7 @@ class DatabaseService extends ChangeNotifier {
       // Add energy entry
       _carbonEntries.add(CarbonEntryModel(
         id: 'entry_energy_$i',
-        userId: 'demo_user_123',
+        userId: 'user_123',
         date: date,
         category: 'energy',
         subType: 'electricity_kwh',
@@ -321,7 +331,7 @@ class DatabaseService extends ChangeNotifier {
       // Add food entry
       _carbonEntries.add(CarbonEntryModel(
         id: 'entry_food_$i',
-        userId: 'demo_user_123',
+        userId: 'user_123',
         date: date,
         category: 'food',
         subType: ['beef_serving', 'chicken_serving', 'vegetarian_meal', 'vegan_meal'][random.nextInt(4)],
@@ -342,7 +352,7 @@ class DatabaseService extends ChangeNotifier {
     _forumPosts.addAll([
       ForumPostModel(
         id: 'post_1',
-        userId: 'demo_user_123',
+        userId: 'user_123',
         authorName: 'Demo User',
         authorImageUrl: 'https://ui-avatars.com/api/?name=Demo+User&size=200&background=2E7D32&color=fff',
         title: 'My First Week Going Plastic-Free!',
@@ -393,7 +403,7 @@ class DatabaseService extends ChangeNotifier {
       CommentModel(
         id: 'comment_2',
         postId: 'post_2',
-        userId: 'demo_user_123',
+        userId: 'user_123',
         authorName: 'Demo User',
         authorImageUrl: 'https://ui-avatars.com/api/?name=Demo+User&size=200&background=2E7D32&color=fff',
         body: 'Great tips! I just started composting and this is really helpful.',
