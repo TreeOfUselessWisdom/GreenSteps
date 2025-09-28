@@ -172,7 +172,7 @@ class _ChallengesScreenState extends State<ChallengesScreen> with SingleTickerPr
                     userChallenge: null,
                     onStart: () => _startChallenge(challenge.id),
                     onComplete: null,
-                    onTap: () => _showChallengeDetails(challenge), // Add this
+                    onTap: () => _showChallengeDetails(challenge), 
                   ),
                 ).toList(),
               ),
@@ -218,6 +218,8 @@ class _ChallengesScreenState extends State<ChallengesScreen> with SingleTickerPr
                 userChallenge: userChallenge,
                 onStart: null,
                 onComplete: () => _completeChallenge(userChallenge.challengeId),
+                onTap: () => _showChallengeDetails(challenge), 
+                showActionButton: false,
               ),
             );
           }
@@ -290,6 +292,7 @@ class _ChallengesScreenState extends State<ChallengesScreen> with SingleTickerPr
                 userChallenge: userChallenge,
                 onStart: null,
                 onComplete: null,
+                onTap: () => _showChallengeDetails(challenge), 
               ),
             );
           }
@@ -677,16 +680,81 @@ class _ChallengesScreenState extends State<ChallengesScreen> with SingleTickerPr
                     const SizedBox(height: 20),
                     
                     // Action Button
-                    SizedBox(
-                      width: double.infinity,
-                      height: 48,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          _startChallenge(challenge.id);
-                        },
-                        child: const Text('Start Challenge'),
-                      ),
+                    Consumer2<AuthService, DatabaseService>(
+                      builder: (context, authService, databaseService, child) {
+                        final userChallenges = databaseService.userChallenges;
+                        final userChallenge = userChallenges.firstWhere(
+                          (uc) => uc.challengeId == challenge.id,
+                          orElse: () => UserChallengeModel(
+                            id: '',
+                            userId: '',
+                            challengeId: challenge.id,
+                            startedAt: DateTime.now(),
+                            status: 'available', 
+                          ),
+                        );
+                        
+                        final isCompleted = userChallenge.isCompleted;
+                        final isActive = userChallenge.isActive;
+                        
+                        if (isCompleted) {
+                          return Container(
+                            width: double.infinity,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF4CAF50).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Center(
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.check_circle, color: Color(0xFF4CAF50), size: 20),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Completed',
+                                    style: TextStyle(
+                                      color: Color(0xFF4CAF50),
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }
+                        
+                        if (isActive) {
+                          return SizedBox(
+                            width: double.infinity,
+                            height: 48,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                                _completeChallenge(challenge.id);
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF4CAF50),
+                                foregroundColor: Colors.white,
+                              ),
+                              child: const Text('Mark Complete'),
+                            ),
+                          );
+                        }
+                        
+                        // Only show "Start Challenge" for available challenges
+                        return SizedBox(
+                          width: double.infinity,
+                          height: 48,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                              _startChallenge(challenge.id);
+                            },
+                            child: const Text('Start Challenge'),
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),

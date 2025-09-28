@@ -8,6 +8,7 @@ class ChallengeCardWidget extends StatelessWidget {
   final VoidCallback? onStart;
   final VoidCallback? onComplete;
   final VoidCallback? onTap; // Added onTap parameter
+  final bool showActionButton;
 
   const ChallengeCardWidget({
     super.key,
@@ -16,6 +17,7 @@ class ChallengeCardWidget extends StatelessWidget {
     this.onStart,
     this.onComplete,
     this.onTap, // Added onTap to constructor
+    this.showActionButton = true,
   });
 
   @override
@@ -133,10 +135,11 @@ class ChallengeCardWidget extends StatelessWidget {
                     const SizedBox(height: 12),
                     
                     // Action Button
-                    SizedBox(
-                      width: double.infinity,
-                      child: _buildActionButton(context, isCompleted, isActive),
-                    ),
+                    if (showActionButton)
+                      SizedBox(
+                        width: double.infinity,
+                        child: _buildActionButton(context, isCompleted, isActive),
+                      ),
                   ],
                 ),
               ),
