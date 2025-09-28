@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../services/auth_service.dart';
 import '../services/database_service.dart';
 import '../widgets/custom_app_bar.dart';
@@ -164,12 +165,14 @@ class _ChallengesScreenState extends State<ChallengesScreen> with SingleTickerPr
               ),
               const SizedBox(height: 16),
               ResponsiveGridWidget(
+                childAspectRatio: 0.5, // Much taller for challenges (was 0.75)
                 children: availableChallenges.map((challenge) =>
                   ChallengeCardWidget(
                     challenge: challenge,
                     userChallenge: null,
                     onStart: () => _startChallenge(challenge.id),
                     onComplete: null,
+                    onTap: () => _showChallengeDetails(challenge), // Add this
                   ),
                 ).toList(),
               ),
@@ -593,5 +596,105 @@ class _ChallengesScreenState extends State<ChallengesScreen> with SingleTickerPr
         );
       }
     }
+  }
+
+  void _showChallengeDetails(ChallengeModel challenge) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.7,
+          maxChildSize: 0.9,
+          minChildSize: 0.5,
+          builder: (context, scrollController) {
+            return Container(
+              padding: const EdgeInsets.all(20),
+              child: SingleChildScrollView(
+                controller: scrollController,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Challenge Image
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: CachedNetworkImage(
+                        imageUrl: challenge.imageUrl,
+                        width: double.infinity,
+                        height: 200,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => Container(
+                          height: 200,
+                          color: Colors.grey[200],
+                          child: const Center(child: CircularProgressIndicator()),
+                        ),
+                        errorWidget: (context, url, error) => Container(
+                          height: 200,
+                          color: Colors.grey[200],
+                          child: const Icon(Icons.flag, size: 40),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    
+                    // Challenge Info
+                    Text(
+                      challenge.title,
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    
+                    // Description
+                    Text(
+                      challenge.description,
+                      style: Theme.of(context).textTheme.bodyLarge,
+                    ),
+                    const SizedBox(height: 20),
+                    
+                    // Tips
+                    Text(
+                      'Tips:',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    ...challenge.tips.map((tip) => Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('• ', style: TextStyle(fontSize: 16)),
+                          Expanded(child: Text(tip)),
+                        ],
+                      ),
+                    )),
+                    const SizedBox(height: 20),
+                    
+                    // Action Button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          _startChallenge(challenge.id);
+                        },
+                        child: const Text('Start Challenge'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 }

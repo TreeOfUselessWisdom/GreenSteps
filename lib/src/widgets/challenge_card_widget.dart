@@ -7,6 +7,7 @@ class ChallengeCardWidget extends StatelessWidget {
   final UserChallengeModel? userChallenge;
   final VoidCallback? onStart;
   final VoidCallback? onComplete;
+  final VoidCallback? onTap; // Added onTap parameter
 
   const ChallengeCardWidget({
     super.key,
@@ -14,6 +15,7 @@ class ChallengeCardWidget extends StatelessWidget {
     this.userChallenge,
     this.onStart,
     this.onComplete,
+    this.onTap, // Added onTap to constructor
   });
 
   @override
@@ -21,123 +23,126 @@ class ChallengeCardWidget extends StatelessWidget {
     final isCompleted = userChallenge?.isCompleted ?? false;
     final isActive = userChallenge?.isActive ?? false;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardTheme.color,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Challenge Image
-          ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-            child: AspectRatio(
-              aspectRatio: 1.5,
-              child: CachedNetworkImage(
-                imageUrl: challenge.imageUrl,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                placeholder: (context, url) => Container(
-                  color: Colors.grey[200],
-                  child: const Center(
-                    child: CircularProgressIndicator(),
+    return GestureDetector( // Wrap the entire card in GestureDetector
+      onTap: onTap, // Add this parameter to the widget
+      child: Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardTheme.color,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Challenge Image
+            ClipRRect(
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              child: AspectRatio(
+                aspectRatio: 1.5,
+                child: CachedNetworkImage(
+                  imageUrl: challenge.imageUrl,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => Container(
+                    color: Colors.grey[200],
+                    child: const Center(
+                      child: CircularProgressIndicator(),
+                    ),
                   ),
-                ),
-                errorWidget: (context, url, error) => Container(
-                  color: Colors.grey[200],
-                  child: Icon(
-                    Icons.flag,
-                    color: Colors.grey[400],
-                    size: 40,
+                  errorWidget: (context, url, error) => Container(
+                    color: Colors.grey[200],
+                    child: Icon(
+                      Icons.flag,
+                      color: Colors.grey[400],
+                      size: 40,
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-          
-          // Challenge Info
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Title
-                  Text(
-                    challenge.title,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 8),
-                  
-                  // Description
-                  Text(
-                    challenge.description,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.grey[600],
-                    ),
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 12),
-                  
-                  // Frequency and Points
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: _getCategoryColor(challenge.category).withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          challenge.frequency,
-                          style: TextStyle(
-                            color: _getCategoryColor(challenge.category),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+            
+            // Challenge Info
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Title
+                    Text(
+                      challenge.title,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
                       ),
-                      const Spacer(),
-                      Row(
-                        children: [
-                          const Icon(Icons.stars, color: Colors.amber, size: 16),
-                          const SizedBox(width: 4),
-                          Text(
-                            '${challenge.rewardPoints} pts',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 8),
+                    
+                    // Description
+                    Text(
+                      challenge.description,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Colors.grey[600],
+                      ),
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 12),
+                    
+                    // Frequency and Points
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: _getCategoryColor(challenge.category).withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            challenge.frequency,
+                            style: TextStyle(
+                              color: _getCategoryColor(challenge.category),
+                              fontSize: 12,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  
-                  // Action Button
-                  SizedBox(
-                    width: double.infinity,
-                    child: _buildActionButton(context, isCompleted, isActive),
-                  ),
-                ],
+                        ),
+                        const Spacer(),
+                        Row(
+                          children: [
+                            const Icon(Icons.stars, color: Colors.amber, size: 16),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${challenge.rewardPoints} pts',
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    
+                    // Action Button
+                    SizedBox(
+                      width: double.infinity,
+                      child: _buildActionButton(context, isCompleted, isActive),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
