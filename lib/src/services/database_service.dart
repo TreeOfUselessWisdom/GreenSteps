@@ -43,10 +43,11 @@ class DatabaseService extends ChangeNotifier {
   }
 
   List<CarbonEntryModel> getCarbonEntriesForDateRange(String userId, DateTime start, DateTime end) {
+    // Inclusive range: start <= entry.date <= end
     return _carbonEntries.where((entry) => 
-        entry.userId == userId && 
-        entry.date.isAfter(start.subtract(const Duration(days: 1))) &&
-        entry.date.isBefore(end.add(const Duration(days: 1)))
+        entry.userId == userId &&
+        !entry.date.isBefore(start) &&
+        !entry.date.isAfter(end)
     ).toList();
   }
 
@@ -297,7 +298,7 @@ class DatabaseService extends ChangeNotifier {
       // Add transport entry
       _carbonEntries.add(CarbonEntryModel(
         id: 'entry_transport_$i',
-        userId: 'demo_user_123',
+        userId: 'user_123',
         date: date,
         category: 'transport',
         subType: ['car_km', 'bus_km', 'train_km', 'bike_km'][random.nextInt(4)],
@@ -309,7 +310,7 @@ class DatabaseService extends ChangeNotifier {
       // Add energy entry
       _carbonEntries.add(CarbonEntryModel(
         id: 'entry_energy_$i',
-        userId: 'demo_user_123',
+        userId: 'user_123',
         date: date,
         category: 'energy',
         subType: 'electricity_kwh',
@@ -321,7 +322,7 @@ class DatabaseService extends ChangeNotifier {
       // Add food entry
       _carbonEntries.add(CarbonEntryModel(
         id: 'entry_food_$i',
-        userId: 'demo_user_123',
+        userId: 'user_123',
         date: date,
         category: 'food',
         subType: ['beef_serving', 'chicken_serving', 'vegetarian_meal', 'vegan_meal'][random.nextInt(4)],
@@ -342,7 +343,7 @@ class DatabaseService extends ChangeNotifier {
     _forumPosts.addAll([
       ForumPostModel(
         id: 'post_1',
-        userId: 'demo_user_123',
+        userId: 'user_123',
         authorName: 'Demo User',
         authorImageUrl: 'https://ui-avatars.com/api/?name=Demo+User&size=200&background=2E7D32&color=fff',
         title: 'My First Week Going Plastic-Free!',
@@ -393,7 +394,7 @@ class DatabaseService extends ChangeNotifier {
       CommentModel(
         id: 'comment_2',
         postId: 'post_2',
-        userId: 'demo_user_123',
+        userId: 'user_123',
         authorName: 'Demo User',
         authorImageUrl: 'https://ui-avatars.com/api/?name=Demo+User&size=200&background=2E7D32&color=fff',
         body: 'Great tips! I just started composting and this is really helpful.',

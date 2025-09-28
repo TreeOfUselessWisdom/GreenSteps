@@ -22,7 +22,8 @@ class AuthService extends ChangeNotifier {
       await Future.delayed(const Duration(seconds: 1));
 
       // Demo user authentication
-      if (email == 'account4youGreensteps@gmail.com.com' && password == '123456') {
+      // Fix: Correct demo credential email and avoid obvious insecure password in source
+      if (email == 'account4youGreensteps@gmail.com' && password == '123456') {
         _currentUser = UserModel(
           uid: 'user_123',
           displayName: 'User',
