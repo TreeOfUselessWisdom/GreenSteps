@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/carbon_entry_model.dart';
 import '../models/product_model.dart';
 import '../models/challenge_model.dart';
@@ -8,6 +9,7 @@ import '../models/forum_post_model.dart';
 import '../core/constants.dart';
 
 class DatabaseService extends ChangeNotifier {
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
   final List<CarbonEntryModel> _carbonEntries = [];
   final List<ProductModel> _products = [];
   final List<ChallengeModel> _challenges = [];
@@ -36,6 +38,8 @@ class DatabaseService extends ChangeNotifier {
   Future<void> addCarbonEntry(CarbonEntryModel entry) async {
     _carbonEntries.add(entry);
     notifyListeners();
+    // Fire-and-forget persist to Firestore
+    unawaited(_db.collection('carbonEntries').doc(entry.id).set(entry.toJson()));
   }
 
   List<CarbonEntryModel> getCarbonEntriesForUser(String userId) {
@@ -90,6 +94,7 @@ class DatabaseService extends ChangeNotifier {
     );
     _userChallenges.add(userChallenge);
     notifyListeners();
+    unawaited(_db.collection('userChallenges').doc(userChallenge.id).set(userChallenge.toJson()));
   }
 
   Future<void> completeChallenge(String userId, String challengeId) async {
@@ -109,6 +114,7 @@ class DatabaseService extends ChangeNotifier {
       );
       _userChallenges[index] = updated;
       notifyListeners();
+      unawaited(_db.collection('userChallenges').doc(updated.id).update(updated.toJson()));
     }
   }
 
@@ -120,6 +126,7 @@ class DatabaseService extends ChangeNotifier {
   Future<void> addForumPost(ForumPostModel post) async {
     _forumPosts.add(post);
     notifyListeners();
+    unawaited(_db.collection('forumPosts').doc(post.id).set(post.toJson()));
   }
 
   Future<void> likePost(String postId) async {
@@ -127,12 +134,14 @@ class DatabaseService extends ChangeNotifier {
     if (index != -1) {
       _forumPosts[index] = _forumPosts[index].copyWith(likes: _forumPosts[index].likes + 1);
       notifyListeners();
+      unawaited(_db.collection('forumPosts').doc(postId).update({'likes': _forumPosts[index].likes}));
     }
   }
 
   Future<void> addComment(CommentModel comment) async {
     _comments.add(comment);
     notifyListeners();
+    unawaited(_db.collection('comments').doc(comment.id).set(comment.toJson()));
   }
 
   List<CommentModel> getCommentsForPost(String postId) {

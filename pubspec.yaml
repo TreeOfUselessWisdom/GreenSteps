@@ -16,6 +16,9 @@ dependencies:
   firebase_auth: ^4.6.1
   google_sign_in: ^6.2.0
 
+  # Firestore database
+  cloud_firestore: ^5.5.1
+
   # Core packages (fully cross-platform)
   cupertino_icons: ^1.0.6
   dio: ^5.8.0
