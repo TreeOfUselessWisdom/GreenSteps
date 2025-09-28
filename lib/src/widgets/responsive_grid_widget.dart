@@ -12,7 +12,7 @@ class ResponsiveGridWidget extends StatelessWidget {
     required this.children,
     this.spacing = 12.0,
     this.runSpacing = 12.0,
-    this.childAspectRatio = 1.0,
+    this.childAspectRatio = 0.75, // Changed from 1.0 to 0.75 for taller cards
   });
 
   @override
@@ -48,4 +48,3 @@ class ResponsiveGridWidget extends StatelessWidget {
     );
   }
 }
-

@@ -476,7 +476,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             children: [
               Container(
                 padding: const EdgeInsets.all(24),
-                decoration: const BoxDecoration(                  
+                decoration: BoxDecoration(                  
                     color: Theme.of(context).cardTheme.color,
                     border: Border(
                       bottom: BorderSide(
